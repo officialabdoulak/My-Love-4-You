@@ -32,62 +32,33 @@ def split_time(time_text):
 async def send_photo_or_text(bot, image_path, text):
     if image_path:
         with open(image_path, "rb") as photo:
-            await bot.send_photo(
-                chat_id=CHAT_ID,
-                photo=photo,
-                caption=text
-            )
+            await bot.send_photo(chat_id=CHAT_ID, photo=photo, caption=text)
     else:
-        await bot.send_message(
-            chat_id=CHAT_ID,
-            text=text
-        )
+        await bot.send_message(chat_id=CHAT_ID, text=text)
 
 
 async def send_morning_message(bot):
-    await send_photo_or_text(
-        bot,
-        get_morning_image(),
-        get_today_morning_message()
-    )
+    await send_photo_or_text(bot, get_morning_image(), get_today_morning_message())
 
 
 async def send_morning_compliment(bot):
-    await bot.send_message(
-        chat_id=CHAT_ID,
-        text=get_today_morning_compliment()
-    )
+    await bot.send_message(chat_id=CHAT_ID, text=get_today_morning_compliment())
 
 
 async def send_night_compliment(bot):
-    await bot.send_message(
-        chat_id=CHAT_ID,
-        text=get_today_night_compliment()
-    )
+    await bot.send_message(chat_id=CHAT_ID, text=get_today_night_compliment())
 
 
 async def send_good_night_message(bot):
-    await send_photo_or_text(
-        bot,
-        get_night_image(),
-        get_today_night_message()
-    )
+    await send_photo_or_text(bot, get_night_image(), get_today_night_message())
 
 
 async def send_kahf_reminder(bot):
-    await send_photo_or_text(
-        bot,
-        get_kahf_image(),
-        get_kahf_reminder()
-    )
+    await send_photo_or_text(bot, get_kahf_image(), get_kahf_reminder())
 
 
 async def send_jumuah_reminder(bot):
-    await send_photo_or_text(
-        bot,
-        get_jumuah_image(),
-        get_jumuah_reminder()
-    )
+    await send_photo_or_text(bot, get_jumuah_image(), get_jumuah_reminder())
 
 
 def setup_scheduler(bot):
@@ -105,8 +76,9 @@ def setup_scheduler(bot):
     scheduler.add_job(send_night_compliment, "cron", hour=night_comp_hour, minute=night_comp_minute, args=[bot])
     scheduler.add_job(send_good_night_message, "cron", hour=good_night_hour, minute=good_night_minute, args=[bot])
 
-    scheduler.add_job(send_kahf_reminder, "cron", day_of_week="fri", hour=kahf_hour, minute=kahf_minute, args=[bot])
-    scheduler.add_job(send_jumuah_reminder, "cron", day_of_week="fri", hour=jumuah_hour, minute=jumuah_minute, args=[bot])
+    # TEST MODE: Friday reminders run daily at test time
+    scheduler.add_job(send_kahf_reminder, "cron", hour=kahf_hour, minute=kahf_minute, args=[bot])
+    scheduler.add_job(send_jumuah_reminder, "cron", hour=jumuah_hour, minute=jumuah_minute, args=[bot])
 
     scheduler.start()
     return scheduler
