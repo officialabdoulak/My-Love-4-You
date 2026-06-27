@@ -136,7 +136,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(get_sleep_dua(), reply_markup=dua_keyboard())
 
     elif data == "friday_dua":
-        await query.edit_message_text(get_friday_dua(), reply_markup=dua_keyboard())
+        await query.message.reply_text(
+            get_friday_dua(),
+            reply_markup=dua_keyboard()
+        )
 
     elif data == "love_letter":
         await query.edit_message_text(
