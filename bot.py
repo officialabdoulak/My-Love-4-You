@@ -1,3 +1,5 @@
+import random
+
 from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 
@@ -13,11 +15,11 @@ from keyboards import (
 )
 
 from duas import get_morning_dua, get_evening_dua, get_sleep_dua, get_friday_dua
-from love_letters import get_today_love_letter
+from love_letters import get_today_love_letter, LOVE_LETTERS
 from journey import get_current_day
 
-from morning import get_today_morning_message
-from night import get_today_night_message
+from morning import get_today_morning_message, MORNING_MESSAGES
+from night import get_today_night_message, NIGHT_MESSAGES
 from friday import get_kahf_reminder, get_jumuah_reminder
 
 from media import (
@@ -43,8 +45,18 @@ async def test_morning(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await send_photo_or_text(context.bot, get_morning_image(), get_today_morning_message())
 
 
+async def test_random_morning(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    message = random.choice(MORNING_MESSAGES)
+    await send_photo_or_text(context.bot, get_morning_image(), message)
+
+
 async def test_night(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await send_photo_or_text(context.bot, get_night_image(), get_today_night_message())
+
+
+async def test_random_night(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    message = random.choice(NIGHT_MESSAGES)
+    await send_photo_or_text(context.bot, get_night_image(), message)
 
 
 async def test_kahf(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -53,6 +65,11 @@ async def test_kahf(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def test_jumuah(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await send_photo_or_text(context.bot, get_jumuah_image(), get_jumuah_reminder())
+
+
+async def test_random_love(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    message = random.choice(LOVE_LETTERS)
+    await update.message.reply_text(message)
 
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -121,9 +138,15 @@ def main():
     app.add_handler(CommandHandler("start", start))
 
     app.add_handler(CommandHandler("test_morning", test_morning))
+    app.add_handler(CommandHandler("test_random_morning", test_random_morning))
+
     app.add_handler(CommandHandler("test_night", test_night))
+    app.add_handler(CommandHandler("test_random_night", test_random_night))
+
     app.add_handler(CommandHandler("test_kahf", test_kahf))
     app.add_handler(CommandHandler("test_jumuah", test_jumuah))
+
+    app.add_handler(CommandHandler("test_random_love", test_random_love))
 
     app.add_handler(CallbackQueryHandler(button_handler))
 
