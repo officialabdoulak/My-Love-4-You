@@ -1,92 +1,52 @@
 import os
-from journey import get_current_day
+import random
 
-# ==========================
-# ASSETS PATHS
-# ==========================
+MEDIA_DIR = "media"
 
-BASE_FOLDER = "assets"
+MORNING_IMAGES = [
+    os.path.join(MEDIA_DIR, "morning", f)
+    for f in os.listdir(os.path.join(MEDIA_DIR, "morning"))
+    if f.lower().endswith((".jpg", ".jpeg", ".png"))
+]
 
-MORNING_FOLDER = os.path.join(BASE_FOLDER, "morning")
-NIGHT_FOLDER = os.path.join(BASE_FOLDER, "night")
-FRIDAY_FOLDER = os.path.join(BASE_FOLDER, "friday")
-LOVE_FOLDER = os.path.join(BASE_FOLDER, "love")
+NIGHT_IMAGES = [
+    os.path.join(MEDIA_DIR, "night", f)
+    for f in os.listdir(os.path.join(MEDIA_DIR, "night"))
+    if f.lower().endswith((".jpg", ".jpeg", ".png"))
+]
 
+KAHF_IMAGES = [
+    os.path.join(MEDIA_DIR, "kahf", f)
+    for f in os.listdir(os.path.join(MEDIA_DIR, "kahf"))
+    if f.lower().endswith((".jpg", ".jpeg", ".png"))
+]
 
-# ==========================
-# MORNING IMAGE
-# ==========================
+JUMUAH_IMAGES = [
+    os.path.join(MEDIA_DIR, "jumuah", f)
+    for f in os.listdir(os.path.join(MEDIA_DIR, "jumuah"))
+    if f.lower().endswith((".jpg", ".jpeg", ".png"))
+]
+
 
 def get_morning_image():
-
-    day = get_current_day()
-
-    image_number = ((day - 1) % 14) + 1
-
-    for ext in [".jpg", ".jpeg", ".png", ".webp"]:
-        image = os.path.join(MORNING_FOLDER, f"{image_number}{ext}")
-
-        if os.path.exists(image):
-            return image
-
-    return None
+    return random.choice(MORNING_IMAGES)
 
 
-# ==========================
-# NIGHT IMAGE
-# ==========================
+def get_random_morning_image():
+    return random.choice(MORNING_IMAGES)
+
 
 def get_night_image():
-
-    for ext in [".jpg", ".jpeg", ".png", ".webp"]:
-        image = os.path.join(NIGHT_FOLDER, f"gn{ext}")
-
-        if os.path.exists(image):
-            return image
-
-    return None
+    return random.choice(NIGHT_IMAGES)
 
 
-# ==========================
-# FRIDAY IMAGES
-# ==========================
+def get_random_night_image():
+    return random.choice(NIGHT_IMAGES)
+
 
 def get_kahf_image():
-
-    for ext in [".jpg", ".jpeg", ".png", ".webp"]:
-        image = os.path.join(FRIDAY_FOLDER, f"kahf{ext}")
-
-        if os.path.exists(image):
-            return image
-
-    return None
+    return random.choice(KAHF_IMAGES)
 
 
 def get_jumuah_image():
-
-    for ext in [".jpg", ".jpeg", ".png", ".webp"]:
-        image = os.path.join(FRIDAY_FOLDER, f"jumuah{ext}")
-
-        if os.path.exists(image):
-            return image
-
-    return None
-
-
-# ==========================
-# LOVE IMAGE
-# ==========================
-
-def get_love_image():
-
-    images = []
-
-    for file in os.listdir(LOVE_FOLDER):
-
-        if file.lower().endswith((".jpg", ".jpeg", ".png", ".webp")):
-            images.append(os.path.join(LOVE_FOLDER, file))
-
-    if images:
-        return images[0]
-
-    return None
+    return random.choice(JUMUAH_IMAGES)
