@@ -1,52 +1,46 @@
 import os
 import random
 
-MEDIA_DIR = "media"
+ASSETS_DIR = "assets"
 
-MORNING_IMAGES = [
-    os.path.join(MEDIA_DIR, "morning", f)
-    for f in os.listdir(os.path.join(MEDIA_DIR, "morning"))
-    if f.lower().endswith((".jpg", ".jpeg", ".png"))
-]
 
-NIGHT_IMAGES = [
-    os.path.join(MEDIA_DIR, "night", f)
-    for f in os.listdir(os.path.join(MEDIA_DIR, "night"))
-    if f.lower().endswith((".jpg", ".jpeg", ".png"))
-]
+def _get_random_image(folder):
+    folder_path = os.path.join(ASSETS_DIR, folder)
 
-KAHF_IMAGES = [
-    os.path.join(MEDIA_DIR, "kahf", f)
-    for f in os.listdir(os.path.join(MEDIA_DIR, "kahf"))
-    if f.lower().endswith((".jpg", ".jpeg", ".png"))
-]
+    if not os.path.exists(folder_path):
+        return None
 
-JUMUAH_IMAGES = [
-    os.path.join(MEDIA_DIR, "jumuah", f)
-    for f in os.listdir(os.path.join(MEDIA_DIR, "jumuah"))
-    if f.lower().endswith((".jpg", ".jpeg", ".png"))
-]
+    images = [
+        os.path.join(folder_path, f)
+        for f in os.listdir(folder_path)
+        if f.lower().endswith((".jpg", ".jpeg", ".png", ".webp"))
+    ]
+
+    if not images:
+        return None
+
+    return random.choice(images)
 
 
 def get_morning_image():
-    return random.choice(MORNING_IMAGES)
+    return _get_random_image("morning")
 
 
 def get_random_morning_image():
-    return random.choice(MORNING_IMAGES)
+    return _get_random_image("morning")
 
 
 def get_night_image():
-    return random.choice(NIGHT_IMAGES)
+    return _get_random_image("night")
 
 
 def get_random_night_image():
-    return random.choice(NIGHT_IMAGES)
+    return _get_random_image("night")
 
 
 def get_kahf_image():
-    return random.choice(KAHF_IMAGES)
+    return _get_random_image("kahf")
 
 
 def get_jumuah_image():
-    return random.choice(JUMUAH_IMAGES)
+    return _get_random_image("jumuah")
