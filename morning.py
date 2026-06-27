@@ -1,191 +1,160 @@
-from journey import get_current_day, get_today_nickname
-from config import OWNER_NAME
+import random
 
+from telegram import Update
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 
-MORNING_MESSAGES = [
-    f"""
-🌅 Good Morning, {get_today_nickname()}
+from config import BOT_TOKEN, BOT_NAME, TOTAL_DAYS
+from scheduler import setup_scheduler, send_photo_or_text
 
-A beautiful new day has started, and I just want you to begin it with peace in your heart.
+from keyboards import (
+    home_keyboard,
+    daily_azkar_keyboard,
+    friday_keyboard,
+    dua_keyboard,
+    love_letter_keyboard,
+)
 
-May Allah protect you, guide your steps, open doors of ease for you, and keep your smile safe today.
+from duas import get_morning_dua, get_evening_dua, get_sleep_dua, get_friday_dua
+from love_letters import get_today_love_letter, LOVE_LETTERS
+from journey import get_current_day
 
-Remember that you are loved, valued, and always in my duas.
+from morning import get_today_morning_message, MORNING_MESSAGES
+from night import get_today_night_message, NIGHT_MESSAGES
+from friday import get_kahf_reminder, get_jumuah_reminder
 
-With love,
-{OWNER_NAME}
-""",
+from media import (
+    get_morning_image,
+    get_night_image,
+    get_kahf_image,
+    get_jumuah_image,
+)
 
-    f"""
-🌸 Good Morning, {get_today_nickname()}
 
-Alhamdulillah for another precious morning.
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = f"""
+🏡 {BOT_NAME}
 
-I pray today brings you happiness, soft moments, good news, and the kind of peace your heart truly deserves.
+Welcome home ❤️
 
-Take care of yourself today. Eat well, smile often, and do not let anything steal your peace.
-
-With love,
-{OWNER_NAME}
-""",
-
-    f"""
-☀️ Good Morning, {get_today_nickname()}
-
-Before the world gets busy, I want you to remember how special you are to me.
-
-May Allah bless your day, remove every worry from your heart, and replace it with comfort, confidence, and joy.
-
-Go gently today, my love.
-
-With love,
-{OWNER_NAME}
-""",
-
-    f"""
-🤍 Good Morning, {get_today_nickname()}
-
-I hope your heart feels light today.
-
-May Allah make your path easy, protect you from harm, and surround you with people and moments that bring you happiness.
-
-You deserve a peaceful day and a beautiful smile.
-
-With love,
-{OWNER_NAME}
-""",
-
-    f"""
-🌹 Good Morning, {get_today_nickname()}
-
-Another morning, another reason to thank Allah.
-
-I pray your day is filled with barakah, calm thoughts, kind words, and reasons to smile.
-
-No matter how the day goes, remember that someone is quietly praying for you.
-
-With love,
-{OWNER_NAME}
-""",
-
-    f"""
-🌤️ Good Morning, {get_today_nickname()}
-
-May today be gentle with you.
-
-May Allah give you strength where you feel weak, patience where things feel heavy, and happiness in places you did not expect.
-
-You are deeply appreciated, more than words can explain.
-
-With love,
-{OWNER_NAME}
-""",
-
-    f"""
-💛 Good Morning, {get_today_nickname()}
-
-I hope this message finds you smiling.
-
-May Allah bless your morning, protect your heart, and make everything you touch today filled with ease and goodness.
-
-Please take care of yourself for me.
-
-With love,
-{OWNER_NAME}
-""",
-
-    f"""
-🌷 Good Morning, {get_today_nickname()}
-
-A new day means a fresh chance to breathe, grow, and trust Allah again.
-
-May your heart stay soft, your mind stay calm, and your smile stay bright today.
-
-You are always close to my thoughts.
-
-With love,
-{OWNER_NAME}
-""",
-
-    f"""
-✨ Good Morning, {get_today_nickname()}
-
-I pray today gives you more peace than stress, more smiles than worries, and more blessings than you expected.
-
-You have such a beautiful heart, and I hope life treats it gently today.
-
-With love,
-{OWNER_NAME}
-""",
-
-    f"""
-🌻 Good Morning, {get_today_nickname()}
-
-May Allah fill your morning with light and your day with ease.
-
-Whatever you are hoping for, I pray it comes to you in the best way and at the best time.
-
-Keep smiling, my love.
-
-With love,
-{OWNER_NAME}
-""",
-
-    f"""
-☕ Good Morning, {get_today_nickname()}
-
-I hope today starts softly for you.
-
-May Allah protect you from sadness, bless your efforts, and give you calmness in every situation you face.
-
-You are loved more than you know.
-
-With love,
-{OWNER_NAME}
-""",
-
-    f"""
-🕊️ Good Morning, {get_today_nickname()}
-
-May your heart wake up with peace and your soul feel safe today.
-
-I pray Allah gives you beautiful reasons to smile and keeps every difficulty far from you.
-
-Have a calm and blessed day.
-
-With love,
-{OWNER_NAME}
-""",
-
-    f"""
-🌼 Good Morning, {get_today_nickname()}
-
-Today, I just want you to remember one thing.
-
-You matter. Your happiness matters. Your peace matters.
-
-May Allah protect all three for you today and always.
-
-With love,
-{OWNER_NAME}
-""",
-
-    f"""
-🌅 Good Morning, {get_today_nickname()}
-
-Day by day, I keep praying that Allah writes ease, happiness, and protection for you.
-
-May today be one of those days that feels light, blessed, and full of quiet joy.
-
-Start your day with a smile, my love.
-
-With love,
-{OWNER_NAME}
+Choose what you want to open.
 """
-]
+    await update.message.reply_text(text, reply_markup=home_keyboard())
 
 
-def get_today_morning_message():
-    day = get_current_day()
-    index = (day - 1) % len(MORNING_MESSAGES)
-    return MORNING_MESSAGES[index]
+async def test_morning(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await send_photo_or_text(context.bot, get_morning_image(), get_today_morning_message())
+
+
+async def test_random_morning(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    message = random.choice(MORNING_MESSAGES)
+    await send_photo_or_text(context.bot, get_morning_image(), message)
+
+
+async def test_night(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await send_photo_or_text(context.bot, get_night_image(), get_today_night_message())
+
+
+async def test_random_night(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    message = random.choice(NIGHT_MESSAGES)
+    await send_photo_or_text(context.bot, get_night_image(), message)
+
+
+async def test_kahf(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await send_photo_or_text(context.bot, get_kahf_image(), get_kahf_reminder())
+
+
+async def test_jumuah(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await send_photo_or_text(context.bot, get_jumuah_image(), get_jumuah_reminder())
+
+
+async def test_random_love(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    message = random.choice(LOVE_LETTERS)
+    await update.message.reply_text(message)
+
+
+async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+
+    data = query.data
+
+    if data == "home":
+        await query.edit_message_text(
+            f"🏡 {BOT_NAME}\n\nChoose what you want to open.",
+            reply_markup=home_keyboard()
+        )
+
+    elif data == "daily_azkar":
+        await query.edit_message_text(
+            "🤲 Daily Azkar\n\nChoose one:",
+            reply_markup=daily_azkar_keyboard()
+        )
+
+    elif data == "morning_azkar":
+        await query.edit_message_text(get_morning_dua(), reply_markup=dua_keyboard())
+
+    elif data == "evening_azkar":
+        await query.edit_message_text(get_evening_dua(), reply_markup=dua_keyboard())
+
+    elif data == "sleep_azkar":
+        await query.edit_message_text(get_sleep_dua(), reply_markup=dua_keyboard())
+
+    elif data == "friday":
+        await query.edit_message_text(
+            "🕌 Friday\n\nChoose one:",
+            reply_markup=friday_keyboard()
+        )
+
+    elif data == "kahf_page_1":
+        await query.edit_message_text(get_kahf_reminder(), reply_markup=dua_keyboard())
+
+    elif data == "friday_dua":
+        await query.edit_message_text(get_friday_dua(), reply_markup=dua_keyboard())
+
+    elif data == "love_letter":
+        day = get_current_day()
+        await query.edit_message_text(
+            get_today_love_letter(),
+            reply_markup=love_letter_keyboard(day, TOTAL_DAYS)
+        )
+
+    elif data.startswith("love_"):
+        day = get_current_day()
+        await query.edit_message_text(
+            get_today_love_letter(),
+            reply_markup=love_letter_keyboard(day, TOTAL_DAYS)
+        )
+
+    else:
+        await query.edit_message_text(
+            "I don't understand this button yet.",
+            reply_markup=home_keyboard()
+        )
+
+
+def main():
+    app = Application.builder().token(BOT_TOKEN).build()
+
+    app.add_handler(CommandHandler("start", start))
+
+    app.add_handler(CommandHandler("test_morning", test_morning))
+    app.add_handler(CommandHandler("test_random_morning", test_random_morning))
+
+    app.add_handler(CommandHandler("test_night", test_night))
+    app.add_handler(CommandHandler("test_random_night", test_random_night))
+
+    app.add_handler(CommandHandler("test_kahf", test_kahf))
+    app.add_handler(CommandHandler("test_jumuah", test_jumuah))
+
+    app.add_handler(CommandHandler("test_random_love", test_random_love))
+
+    app.add_handler(CallbackQueryHandler(button_handler))
+
+    setup_scheduler(app.bot)
+
+    print(f"{BOT_NAME} is running...")
+    app.run_polling()
+
+
+if __name__ == "__main__":
+    main()
