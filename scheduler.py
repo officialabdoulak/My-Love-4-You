@@ -22,6 +22,7 @@ from morning import get_today_morning_message
 from night import get_today_night_message
 from compliments import get_today_morning_compliment, get_today_night_compliment
 from friday import get_kahf_reminder, get_jumuah_reminder
+from keyboards import jumuah_dua_keyboard
 
 
 def split_time(time_text):
@@ -29,12 +30,21 @@ def split_time(time_text):
     return int(hour), int(minute)
 
 
-async def send_photo_or_text(bot, image_path, text):
+async def send_photo_or_text(bot, image_path, text, reply_markup=None):
     if image_path:
         with open(image_path, "rb") as photo:
-            await bot.send_photo(chat_id=CHAT_ID, photo=photo, caption=text)
+            await bot.send_photo(
+                chat_id=CHAT_ID,
+                photo=photo,
+                caption=text,
+                reply_markup=reply_markup
+            )
     else:
-        await bot.send_message(chat_id=CHAT_ID, text=text)
+        await bot.send_message(
+            chat_id=CHAT_ID,
+            text=text,
+            reply_markup=reply_markup
+        )
 
 
 async def send_morning_message(bot):
@@ -54,11 +64,21 @@ async def send_good_night_message(bot):
 
 
 async def send_kahf_reminder(bot):
-    await send_photo_or_text(bot, get_kahf_image(), get_kahf_reminder())
+    await send_photo_or_text(
+        bot,
+        get_kahf_image(),
+        get_kahf_reminder(),
+        reply_markup=jumuah_dua_keyboard()
+    )
 
 
 async def send_jumuah_reminder(bot):
-    await send_photo_or_text(bot, get_jumuah_image(), get_jumuah_reminder())
+    await send_photo_or_text(
+        bot,
+        get_jumuah_image(),
+        get_jumuah_reminder(),
+        reply_markup=jumuah_dua_keyboard()
+    )
 
 
 def setup_scheduler(bot):
@@ -76,7 +96,7 @@ def setup_scheduler(bot):
     scheduler.add_job(send_night_compliment, "cron", hour=night_comp_hour, minute=night_comp_minute, args=[bot])
     scheduler.add_job(send_good_night_message, "cron", hour=good_night_hour, minute=good_night_minute, args=[bot])
 
-    # TEST MODE: Friday reminders run daily at test time
+    # TEST MODE: Friday reminders run daily.
     scheduler.add_job(send_kahf_reminder, "cron", hour=kahf_hour, minute=kahf_minute, args=[bot])
     scheduler.add_job(send_jumuah_reminder, "cron", hour=jumuah_hour, minute=jumuah_minute, args=[bot])
 
