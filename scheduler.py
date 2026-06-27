@@ -1,7 +1,6 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from config import (
-    CHAT_ID,
     TIMEZONE,
     MORNING_MESSAGE_TIME,
     MORNING_COMPLIMENT_TIME,
@@ -10,6 +9,8 @@ from config import (
     FRIDAY_KAHF_TIME,
     FRIDAY_JUMUAH_TIME,
 )
+
+from database import get_all_user_ids
 
 from media import (
     get_morning_image,
@@ -31,42 +32,71 @@ def split_time(time_text):
 
 
 async def send_photo_or_text(bot, image_path, text, chat_id=None, reply_markup=None):
-    target_chat_id = chat_id or CHAT_ID
+    if chat_id is None:
+        return
 
     if image_path:
         with open(image_path, "rb") as photo:
             await bot.send_photo(
-                chat_id=target_chat_id,
+                chat_id=chat_id,
                 photo=photo,
                 caption=text,
                 reply_markup=reply_markup
             )
     else:
         await bot.send_message(
-            chat_id=target_chat_id,
+            chat_id=chat_id,
             text=text,
             reply_markup=reply_markup
         )
 
 
+async def broadcast_photo_or_text(bot, image_path, text, reply_markup=None):
+    user_ids = get_all_user_ids()
+
+    for user_id in user_ids:
+        await send_photo_or_text(
+            bot,
+            image_path,
+            text,
+            chat_id=user_id,
+            reply_markup=reply_markup
+        )
+
+
+async def broadcast_text(bot, text):
+    user_ids = get_all_user_ids()
+
+    for user_id in user_ids:
+        await bot.send_message(chat_id=user_id, text=text)
+
+
 async def send_morning_message(bot):
-    await send_photo_or_text(bot, get_morning_image(), get_today_morning_message())
+    await broadcast_photo_or_text(
+        bot,
+        get_morning_image(),
+        get_today_morning_message()
+    )
 
 
 async def send_morning_compliment(bot):
-    await bot.send_message(chat_id=CHAT_ID, text=get_today_morning_compliment())
+    await broadcast_text(bot, get_today_morning_compliment())
 
 
 async def send_night_compliment(bot):
-    await bot.send_message(chat_id=CHAT_ID, text=get_today_night_compliment())
+    await broadcast_text(bot, get_today_night_compliment())
 
 
 async def send_good_night_message(bot):
-    await send_photo_or_text(bot, get_night_image(), get_today_night_message())
+    await broadcast_photo_or_text(
+        bot,
+        get_night_image(),
+        get_today_night_message()
+    )
 
 
 async def send_kahf_reminder(bot):
-    await send_photo_or_text(
+    await broadcast_photo_or_text(
         bot,
         get_kahf_image(),
         get_kahf_reminder(),
@@ -75,7 +105,7 @@ async def send_kahf_reminder(bot):
 
 
 async def send_jumuah_reminder(bot):
-    await send_photo_or_text(
+    await broadcast_photo_or_text(
         bot,
         get_jumuah_image(),
         get_jumuah_reminder(),

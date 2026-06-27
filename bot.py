@@ -1,10 +1,11 @@
 import random
 
-from telegram import Update
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 
 from config import BOT_TOKEN, BOT_NAME, get_nickname, get_signature
 from scheduler import setup_scheduler, send_photo_or_text
+from database import setup_database, register_user, has_seen_welcome, mark_welcomed
 
 from keyboards import (
     home_keyboard,
@@ -31,6 +32,40 @@ def format_message(message):
         nickname=get_nickname(),
         signature=get_signature()
     )
+
+
+def welcome_keyboard():
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("❤️ Begin Our Journey", callback_data="begin_journey")]
+    ])
+
+
+def welcome_message():
+    nickname = get_nickname()
+
+    return f"""
+🌹 Welcome, {nickname}
+
+Assalamu Alaikum ❤️
+
+If you are reading this, it means you have opened something I made specially for you.
+
+This is not just a Telegram bot.
+
+It is a small place where you will find kind words, heartfelt letters, daily reminders, duas, and little moments of love whenever your heart needs them.
+
+Some days, it will remind you to smile.
+
+Some days, it will remind you that Allah is always with you.
+
+And on difficult days, I hope these messages make your heart feel a little lighter.
+
+Everything here was prepared with sincerity, and I pray it becomes a source of comfort, peace, and happiness for you.
+
+May Allah bless your heart, protect your smile, strengthen your faith, and fill your life with endless barakah.
+
+Welcome to our little journey. ❤️
+"""
 
 
 OPEN_WHEN_MESSAGES = {
@@ -79,6 +114,16 @@ I'm always making dua for you.
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user
+    register_user(user.id, user.first_name or "")
+
+    if not has_seen_welcome(user.id):
+        await update.message.reply_text(
+            welcome_message(),
+            reply_markup=welcome_keyboard()
+        )
+        return
+
     await update.message.reply_text(
         f"🏡 {BOT_NAME}\n\nWelcome home ❤️\n\nChoose what you want to open.",
         reply_markup=home_keyboard(),
@@ -86,6 +131,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def test_morning(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    register_user(update.effective_user.id, update.effective_user.first_name or "")
+
     await send_photo_or_text(
         context.bot,
         get_morning_image(),
@@ -147,10 +194,20 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
+    user = update.effective_user
+    register_user(user.id, user.first_name or "")
+
     data = query.data
     today = get_current_day()
 
-    if data == "home":
+    if data == "begin_journey":
+        mark_welcomed(user.id)
+        await query.edit_message_text(
+            f"🏡 {BOT_NAME}\n\nWelcome home ❤️\n\nChoose what you want to open.",
+            reply_markup=home_keyboard()
+        )
+
+    elif data == "home":
         await query.edit_message_text(
             f"🏡 {BOT_NAME}\n\nChoose what you want to open.",
             reply_markup=home_keyboard(),
@@ -242,6 +299,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 def main():
+    setup_database()
+
     app = Application.builder().token(BOT_TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
