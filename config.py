@@ -9,7 +9,7 @@ CHAT_ID = os.getenv("CHAT_ID")
 
 TIMEZONE = pytz.timezone("Africa/Lagos")
 
-OWNER_NAME = "Abdoul ❤️"
+OWNER_NAME = "I'm Abdoul ❤️"
 TOTAL_DAYS = 14
 
 MORNING_MESSAGE_TIME = "07:00"
