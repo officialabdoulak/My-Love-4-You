@@ -2,19 +2,30 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 
 from config import BOT_TOKEN, BOT_NAME, TOTAL_DAYS
-from scheduler import setup_scheduler
-from keyboards import home_keyboard, daily_azkar_keyboard, friday_keyboard, dua_keyboard, love_letter_keyboard
-from duas import get_morning_dua, get_evening_dua, get_sleep_dua, get_friday_dua
-from quran import (
-    get_ayatul_kursi,
-    get_surah_al_ikhlas,
-    get_surah_al_falaq,
-    get_surah_an_nas,
-    get_last_two_verses_of_al_baqarah,
+from scheduler import setup_scheduler, send_photo_or_text
+
+from keyboards import (
+    home_keyboard,
+    daily_azkar_keyboard,
+    friday_keyboard,
+    dua_keyboard,
+    love_letter_keyboard,
 )
+
+from duas import get_morning_dua, get_evening_dua, get_sleep_dua, get_friday_dua
 from love_letters import get_today_love_letter
 from journey import get_current_day
-from friday import get_kahf_reminder
+
+from morning import get_today_morning_message
+from night import get_today_night_message
+from friday import get_kahf_reminder, get_jumuah_reminder
+
+from media import (
+    get_morning_image,
+    get_night_image,
+    get_kahf_image,
+    get_jumuah_image,
+)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -26,6 +37,22 @@ Welcome home ❤️
 Choose what you want to open.
 """
     await update.message.reply_text(text, reply_markup=home_keyboard())
+
+
+async def test_morning(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await send_photo_or_text(context.bot, get_morning_image(), get_today_morning_message())
+
+
+async def test_night(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await send_photo_or_text(context.bot, get_night_image(), get_today_night_message())
+
+
+async def test_kahf(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await send_photo_or_text(context.bot, get_kahf_image(), get_kahf_reminder())
+
+
+async def test_jumuah(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await send_photo_or_text(context.bot, get_jumuah_image(), get_jumuah_reminder())
 
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -47,22 +74,13 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
     elif data == "morning_azkar":
-        await query.edit_message_text(
-            get_morning_dua(),
-            reply_markup=dua_keyboard()
-        )
+        await query.edit_message_text(get_morning_dua(), reply_markup=dua_keyboard())
 
     elif data == "evening_azkar":
-        await query.edit_message_text(
-            get_evening_dua(),
-            reply_markup=dua_keyboard()
-        )
+        await query.edit_message_text(get_evening_dua(), reply_markup=dua_keyboard())
 
     elif data == "sleep_azkar":
-        await query.edit_message_text(
-            get_sleep_dua(),
-            reply_markup=dua_keyboard()
-        )
+        await query.edit_message_text(get_sleep_dua(), reply_markup=dua_keyboard())
 
     elif data == "friday":
         await query.edit_message_text(
@@ -71,16 +89,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
     elif data == "kahf_page_1":
-        await query.edit_message_text(
-            get_kahf_reminder(),
-            reply_markup=dua_keyboard()
-        )
+        await query.edit_message_text(get_kahf_reminder(), reply_markup=dua_keyboard())
 
     elif data == "friday_dua":
-        await query.edit_message_text(
-            get_friday_dua(),
-            reply_markup=dua_keyboard()
-        )
+        await query.edit_message_text(get_friday_dua(), reply_markup=dua_keyboard())
 
     elif data == "love_letter":
         day = get_current_day()
@@ -90,9 +102,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
     elif data.startswith("love_"):
+        day = get_current_day()
         await query.edit_message_text(
             get_today_love_letter(),
-            reply_markup=love_letter_keyboard(get_current_day(), TOTAL_DAYS)
+            reply_markup=love_letter_keyboard(day, TOTAL_DAYS)
         )
 
     else:
@@ -106,6 +119,12 @@ def main():
     app = Application.builder().token(BOT_TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
+
+    app.add_handler(CommandHandler("test_morning", test_morning))
+    app.add_handler(CommandHandler("test_night", test_night))
+    app.add_handler(CommandHandler("test_kahf", test_kahf))
+    app.add_handler(CommandHandler("test_jumuah", test_jumuah))
+
     app.add_handler(CallbackQueryHandler(button_handler))
 
     setup_scheduler(app.bot)
