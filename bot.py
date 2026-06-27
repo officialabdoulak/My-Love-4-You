@@ -1,14 +1,9 @@
 import random
 
 from telegram import Update
-from telegram.ext import (
-    Application,
-    CommandHandler,
-    CallbackQueryHandler,
-    ContextTypes,
-)
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 
-from config import BOT_TOKEN, BOT_NAME
+from config import BOT_TOKEN, BOT_NAME, get_nickname, get_signature
 from scheduler import setup_scheduler, send_photo_or_text
 
 from keyboards import (
@@ -21,50 +16,21 @@ from keyboards import (
     quran_page_keyboard,
 )
 
-from duas import (
-    get_morning_dua,
-    get_evening_dua,
-    get_sleep_dua,
-    get_friday_dua,
-)
-
-from quran import (
-    get_ayatul_kursi,
-    get_surah_ikhlas,
-    get_surah_falaq,
-    get_surah_nas,
-    get_last_baqarah,
-)
-
-from love_letters import (
-    get_today_love_letter,
-    get_love_letter_by_day,
-    LOVE_LETTERS,
-)
-
+from duas import get_morning_dua, get_evening_dua, get_sleep_dua, get_friday_dua
+from quran import get_ayatul_kursi, get_surah_ikhlas, get_surah_falaq, get_surah_nas, get_last_baqarah
+from love_letters import get_today_love_letter, get_love_letter_by_day, LOVE_LETTERS
 from journey import get_current_day
+from morning import get_today_morning_message, MORNING_MESSAGES
+from night import get_today_night_message, NIGHT_MESSAGES
+from friday import get_kahf_reminder, get_jumuah_reminder
+from media import get_morning_image, get_night_image, get_kahf_image, get_jumuah_image
 
-from morning import (
-    get_today_morning_message,
-    MORNING_MESSAGES,
-)
 
-from night import (
-    get_today_night_message,
-    NIGHT_MESSAGES,
-)
-
-from friday import (
-    get_kahf_reminder,
-    get_jumuah_reminder,
-)
-
-from media import (
-    get_morning_image,
-    get_night_image,
-    get_kahf_image,
-    get_jumuah_image,
-)
+def format_message(message):
+    return message.format(
+        nickname=get_nickname(),
+        signature=get_signature()
+    )
 
 
 OPEN_WHEN_MESSAGES = {
@@ -132,7 +98,7 @@ async def test_random_morning(update: Update, context: ContextTypes.DEFAULT_TYPE
     await send_photo_or_text(
         context.bot,
         get_morning_image(),
-        random.choice(MORNING_MESSAGES),
+        format_message(random.choice(MORNING_MESSAGES)),
         chat_id=update.effective_chat.id,
     )
 
@@ -150,7 +116,7 @@ async def test_random_night(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await send_photo_or_text(
         context.bot,
         get_night_image(),
-        random.choice(NIGHT_MESSAGES),
+        format_message(random.choice(NIGHT_MESSAGES)),
         chat_id=update.effective_chat.id,
     )
 
@@ -174,7 +140,7 @@ async def test_jumuah(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def test_random_love(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(random.choice(LOVE_LETTERS))
+    await update.message.reply_text(format_message(random.choice(LOVE_LETTERS)))
 
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -197,28 +163,16 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
     elif data == "morning_azkar":
-        await query.edit_message_text(
-            get_morning_dua(),
-            reply_markup=dua_keyboard()
-        )
+        await query.edit_message_text(get_morning_dua(), reply_markup=dua_keyboard())
 
     elif data == "evening_azkar":
-        await query.edit_message_text(
-            get_evening_dua(),
-            reply_markup=dua_keyboard()
-        )
+        await query.edit_message_text(get_evening_dua(), reply_markup=dua_keyboard())
 
     elif data == "sleep_azkar":
-        await query.edit_message_text(
-            get_sleep_dua(),
-            reply_markup=dua_keyboard()
-        )
+        await query.edit_message_text(get_sleep_dua(), reply_markup=dua_keyboard())
 
     elif data == "friday_dua":
-        await query.edit_message_text(
-            get_friday_dua(),
-            reply_markup=dua_keyboard()
-        )
+        await query.edit_message_text(get_friday_dua(), reply_markup=dua_keyboard())
 
     elif data == "quran":
         await query.edit_message_text(
@@ -227,34 +181,19 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
     elif data == "ayatul_kursi":
-        await query.edit_message_text(
-            get_ayatul_kursi(),
-            reply_markup=quran_page_keyboard()
-        )
+        await query.edit_message_text(get_ayatul_kursi(), reply_markup=quran_page_keyboard())
 
     elif data == "surah_ikhlas":
-        await query.edit_message_text(
-            get_surah_ikhlas(),
-            reply_markup=quran_page_keyboard()
-        )
+        await query.edit_message_text(get_surah_ikhlas(), reply_markup=quran_page_keyboard())
 
     elif data == "surah_falaq":
-        await query.edit_message_text(
-            get_surah_falaq(),
-            reply_markup=quran_page_keyboard()
-        )
+        await query.edit_message_text(get_surah_falaq(), reply_markup=quran_page_keyboard())
 
     elif data == "surah_nas":
-        await query.edit_message_text(
-            get_surah_nas(),
-            reply_markup=quran_page_keyboard()
-        )
+        await query.edit_message_text(get_surah_nas(), reply_markup=quran_page_keyboard())
 
     elif data == "last_baqarah":
-        await query.edit_message_text(
-            get_last_baqarah(),
-            reply_markup=quran_page_keyboard()
-        )
+        await query.edit_message_text(get_last_baqarah(), reply_markup=quran_page_keyboard())
 
     elif data == "love_letter":
         await query.edit_message_text(
@@ -306,7 +245,6 @@ def main():
     app = Application.builder().token(BOT_TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
-
     app.add_handler(CommandHandler("test_morning", test_morning))
     app.add_handler(CommandHandler("test_random_morning", test_random_morning))
     app.add_handler(CommandHandler("test_night", test_night))
@@ -320,7 +258,6 @@ def main():
     setup_scheduler(app.bot)
 
     print(f"✅ {BOT_NAME} is running...")
-
     app.run_polling()
 
 
