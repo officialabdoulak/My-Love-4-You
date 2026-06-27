@@ -30,18 +30,20 @@ def split_time(time_text):
     return int(hour), int(minute)
 
 
-async def send_photo_or_text(bot, image_path, text, reply_markup=None):
+async def send_photo_or_text(bot, image_path, text, chat_id=None, reply_markup=None):
+    target_chat_id = chat_id or CHAT_ID
+
     if image_path:
         with open(image_path, "rb") as photo:
             await bot.send_photo(
-                chat_id=CHAT_ID,
+                chat_id=target_chat_id,
                 photo=photo,
                 caption=text,
                 reply_markup=reply_markup
             )
     else:
         await bot.send_message(
-            chat_id=CHAT_ID,
+            chat_id=target_chat_id,
             text=text,
             reply_markup=reply_markup
         )
@@ -96,9 +98,8 @@ def setup_scheduler(bot):
     scheduler.add_job(send_night_compliment, "cron", hour=night_comp_hour, minute=night_comp_minute, args=[bot])
     scheduler.add_job(send_good_night_message, "cron", hour=good_night_hour, minute=good_night_minute, args=[bot])
 
-    # TEST MODE: Friday reminders run daily.
-    scheduler.add_job(send_kahf_reminder, "cron", hour=kahf_hour, minute=kahf_minute, args=[bot])
-    scheduler.add_job(send_jumuah_reminder, "cron", hour=jumuah_hour, minute=jumuah_minute, args=[bot])
+    scheduler.add_job(send_kahf_reminder, "cron", day_of_week="fri", hour=kahf_hour, minute=kahf_minute, args=[bot])
+    scheduler.add_job(send_jumuah_reminder, "cron", day_of_week="fri", hour=jumuah_hour, minute=jumuah_minute, args=[bot])
 
     scheduler.start()
     return scheduler
